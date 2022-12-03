@@ -1,7 +1,15 @@
 import { useState, createContext, useEffect } from "react";
-import { db } from "../services/firebaseConnection";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { addDoc, collection } from "firebase/firestore";
+import { db, auth } from "../services/firebaseConnection";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+
+import {toast} from 'react-toastify';
+
 
 export const AuthContext = createContext({});
 
@@ -25,6 +33,36 @@ const AuthProvider = ({ children }) => {
     loadStorage();
   }, []);
 
+  async function login(email, password, redirect) {
+    setLoadingAuth(true);
+
+    await signInWithEmailAndPassword(auth, email, password)
+      .then(async (value) => {
+        let uid = value.user.uid;
+        const docRef = doc(db, "users", uid);
+        await getDoc(docRef).then((snap) => {
+         
+          const userProfile = {
+            uid: uid,
+            nome: snap.data().nome,
+            email: value.user.email,
+            avatarUrl: snap.data().avatarUrl,
+          };
+
+          setUser(userProfile);
+          storageUser(userProfile);
+          setLoadingAuth(false);
+
+          toast.success("Bem Vindo a Plataforma!")
+        });
+        redirect();
+      })
+      .catch(() => {
+        toast.error("Erro ao tentar fazer o login!");
+        setLoadingAuth(false);
+      });
+  }
+
   async function signUp(email, password, nome, redirect) {
     setLoadingAuth(true);
 
@@ -34,7 +72,7 @@ const AuthProvider = ({ children }) => {
       .then(async (value) => {
         let uid = value.user.uid;
 
-        await addDoc(collection(db, "users"), {
+        await setDoc(doc(db, "users", uid), {
           nome: nome,
           avatarUrl: null,
         }).then(() => {
@@ -48,13 +86,22 @@ const AuthProvider = ({ children }) => {
           setUser(data);
           storageUser(data);
           setLoadingAuth(false);
+          toast.success("Bem Vindo a Plataforma!")
         });
         redirect();
       })
       .catch((error) => {
         console.log(error);
         setLoadingAuth(false);
+        toast.error("Algo deu errado...");
+
       });
+  }
+
+  async function logoff() {
+    await signOut(auth);
+    localStorage.removeItem("SistemaUser");
+    setUser(null);
   }
 
   function storageUser(data) {
@@ -62,7 +109,9 @@ const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, loading, signUp }}>
+    <AuthContext.Provider
+      value={{ signed: !!user, user, loading, signUp, login, logoff, loadingAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );

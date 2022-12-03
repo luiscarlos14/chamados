@@ -1,33 +1,30 @@
 import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import {AuthContext} from '../../contexts/auth';
+import { AuthContext } from "../../contexts/auth";
 
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
-
-
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
- const navigate = useNavigate();
+  const navigate = useNavigate();
 
- function redirect(){
-  navigate("/", { replace: true });
- }
+  function redirect() {
+    navigate("/", { replace: true });
+  }
 
-  const {signUp} = useContext(AuthContext);
+  const { signUp, loadingAuth } = useContext(AuthContext);
 
   function handleSubmit(e) {
     e.preventDefault();
-    
-    if(name !== '' && email !== '' && password !== ''){
-      signUp(email, password, name, redirect);
 
-    }else{
-      alert("preencha todos os campos")
+    if (name !== "" && email !== "" && password !== "") {
+      signUp(email, password, name, redirect);
+    } else {
+      alert("preencha todos os campos");
     }
   }
 
@@ -59,7 +56,9 @@ export default function Signup() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit">Cadastrar</button>
+          <button type="submit">
+            {loadingAuth ? "Carregando..." : "Cadastrar"}
+          </button>
         </form>
 
         <Link to="/">Já tem uma conta? Entre</Link>

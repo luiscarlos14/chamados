@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../contexts/auth";
+import { useNavigate } from "react-router-dom";
+import {toast} from 'react-toastify';
 
 import "./login.css";
 
@@ -9,9 +12,21 @@ export default function Signin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const navigate = useNavigate();
+
+  const { login, loadingAuth } = useContext(AuthContext);
+
+  function redirect() {
+    navigate("/", { replace: true });
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
-    alert(password);
+    if (email !== "" && password !== "") {
+      login(email, password, redirect);
+    } else {
+      toast.warn("Preencha todos os campos!")
+    }
   }
 
   return (
@@ -35,7 +50,9 @@ export default function Signin() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit">Acessar</button>
+          <button type="submit">
+            {loadingAuth ? "Carregando..." : "Acessar"}
+          </button>
         </form>
 
         <Link to="/register">Criar uma Conta</Link>
