@@ -98,19 +98,32 @@ const AuthProvider = ({ children }) => {
       });
   }
 
-  async function logoff() {
+  async function logoff(redirect) {
     await signOut(auth);
     localStorage.removeItem("SistemaUser");
     setUser(null);
+
+    redirect()
   }
 
   function storageUser(data) {
     localStorage.setItem("SistemaUser", JSON.stringify(data));
   }
 
+
   return (
     <AuthContext.Provider
-      value={{ signed: !!user, user, loading, signUp, login, logoff, loadingAuth }}
+      value={{ 
+        signed: !!user, 
+        user, 
+        loading, 
+        signUp, 
+        login, 
+        logoff, 
+        loadingAuth, 
+        setUser,
+        storageUser
+      }}
     >
       {children}
     </AuthContext.Provider>
