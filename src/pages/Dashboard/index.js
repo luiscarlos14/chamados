@@ -28,17 +28,16 @@ export default function Dashboard() {
   const [lastDocs, setLastDocs] = useState();
 
   const [showPostModal, setShowPostModal] = useState(false);
-  const [detail, setDetail]  = useState();
+  const [detail, setDetail] = useState();
 
   useEffect(() => {
-
     async function loadChamados() {
       const listRef = query(
         collection(db, "chamados"),
         orderBy("created", "desc"),
         limit(5)
       );
-  
+
       await getDocs(listRef)
         .then((snapshot) => {
           updateState(snapshot);
@@ -47,16 +46,14 @@ export default function Dashboard() {
           console.log("Algo deu errado!", error);
           setLoadingMore(false);
         });
-  
+
       setLoading(false);
     }
 
-    
     loadChamados();
     return () => {};
   }, []);
 
- 
   async function updateState(snapshot) {
     const isColletionEmpty = snapshot.size === 0;
 
@@ -104,7 +101,7 @@ export default function Dashboard() {
       .catch((error) => {});
   }
 
-  function togglePostModal(item){
+  function togglePostModal(item) {
     setShowPostModal(!showPostModal); // Trocando de true pra false
     setDetail(item);
   }
@@ -187,12 +184,13 @@ export default function Dashboard() {
                           <FiSearch size={17} color="#FFF" />
                         </button>
 
-                        <button
+                        <Link
                           className="action"
                           style={{ backgroundColor: "#F6a935" }}
+                          to={`/new/${item.id}`}
                         >
                           <FiEdit2 size={17} color="#FFF" />
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   );
@@ -213,14 +211,7 @@ export default function Dashboard() {
         )}
       </div>
 
-              {showPostModal && (
-                <Modal 
-                  conteudo={detail}
-                  close={togglePostModal}
-                />
-              )}
-
-
+      {showPostModal && <Modal conteudo={detail} close={togglePostModal} />}
     </div>
   );
 }

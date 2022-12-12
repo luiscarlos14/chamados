@@ -16,6 +16,7 @@ export default function AuthRoutes() {
         <Route index path="/profile" element={<Profile />}/>
         <Route index path="/customers" element={<Customers />}/>
         <Route index path="/new" element={<New />}/>
+        <Route index path="/new/:id" element={<New />}/>
         <Route path="*" element={<Error />} />
       </Routes>
     </>

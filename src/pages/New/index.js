@@ -11,9 +11,21 @@ import { AuthContext } from "../../contexts/auth";
 import { FiPlusCircle } from "react-icons/fi";
 
 import { db } from "../../services/firebaseConnection";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  getDoc,
+  doc,
+  setDoc,
+} from "firebase/firestore";
+
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function New() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [loadCustomers, setLoadCustomers] = useState(true);
   const [customers, setCustomers] = useState([]);
   const [customerSelected, setCustomerSelected] = useState(0);
@@ -21,6 +33,9 @@ export default function New() {
   const [assunto, setAssunto] = useState("Suporte");
   const [status, setStatus] = useState("Aberto");
   const [complemento, setComplemento] = useState("");
+  const [created, setCreated] = useState();
+
+  const [idCustomer, setIdCustomer] = useState(false);
 
   const { user } = useContext(AuthContext);
 
@@ -46,6 +61,10 @@ export default function New() {
 
           setCustomers(lista);
           setLoadCustomers(false);
+
+          if (id) {
+            loadId(lista);
+          }
         })
         .catch((error) => {
           console.log("Algo deu errado!", error);
@@ -54,12 +73,58 @@ export default function New() {
         });
     }
     loadCustomers();
-  }, []);
+
+    async function loadId(lista) {
+      const docRef = doc(db, "chamados", id);
+
+      await getDoc(docRef)
+        .then((snapshot) => {
+          setAssunto(snapshot.data().assunto);
+          setStatus(snapshot.data().status);
+          setComplemento(snapshot.data().complemento);
+          setCreated(snapshot.data().created);
+
+          let index = lista.findIndex(
+            (item) => item.id === snapshot.data().clienteId
+          );
+          setCustomerSelected(index);
+          setIdCustomer(true);
+        })
+        .catch((error) => {
+          console.log("Erro no Id passado: ", error);
+          setIdCustomer(false);
+        });
+    }
+  }, [id]);
 
   async function handleRegister(e) {
     e.preventDefault();
 
-     await addDoc(collection(db, "chamados"), {
+    if (idCustomer) {
+      await setDoc(doc(db, "chamados", id), {
+        created: created,
+        cliente: customers[customerSelected].nome,
+        clienteId: customers[customerSelected].id,
+        assunto: assunto,
+        status: status,
+        complemento: complemento,
+        userId: user.uid,
+      })
+        .then(() => {
+          toast.success("Chamado editado com sucesso!");
+          setComplemento("");
+          setCustomerSelected(0);
+          navigate("/dashboard", { replace: true });
+        })
+        .catch((error) => {
+          console.log(error);
+          toast.error("Erro ao cadastrar chamado!");
+        });
+
+      return;
+    }
+
+    await addDoc(collection(db, "chamados"), {
       created: new Date(),
       cliente: customers[customerSelected].nome,
       clienteId: customers[customerSelected].id,
@@ -75,8 +140,8 @@ export default function New() {
       })
       .catch((error) => {
         console.log(error);
-        toast.error("Erro ao cadastrar empresa");
-      }); 
+        toast.error("Erro ao cadastrar chamado!");
+      });
   }
 
   //Chamado quando troca o assunto
