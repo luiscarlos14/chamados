@@ -5,13 +5,13 @@
 
 ## Recursos
 
-* Context;
-* Hooks;
-* Criação de Rotas privadas com React-Router-Dom;
-* Utilização do localStorage;
-* Firebase - Authentication / Firestore / Storage;
-* Loading;
-* Renderização Condicional;
+- Context;
+- Hooks;
+- Criação de Rotas privadas com React-Router-Dom;
+- Utilização do localStorage;
+- Firebase -> Authentication / Firestore / Storage;
+- Loading;
+- Renderização Condicional;
 
 ## Link do Projeto
 
